@@ -1,68 +1,134 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import '../models/recipe.dart';
+import '../services/local_storage_service.dart';
+import '../services/recipe_service.dart';
+import '../widgets/molecules/recipe_card.dart';
 import 'recipe_detail_screen.dart';
 
-class FavoritesScreen extends StatelessWidget {
-	final List<Map<String, dynamic>> favoritos;
+class FavoritesScreen extends StatefulWidget {
+  const FavoritesScreen({super.key});
 
-	const FavoritesScreen({super.key, required this.favoritos});
+  @override
+  State<FavoritesScreen> createState() => _FavoritesScreenState();
+}
 
-	@override
-	Widget build(BuildContext context) {
-		Widget buildThumb(String path) {
-			final isNetwork = path.startsWith('http');
-			final image = isNetwork
-					? Image.network(
-						path,
-						width: 50,
-						height: 50,
-						fit: BoxFit.cover,
-						errorBuilder: (context, error, stack) => const Icon(Icons.image_not_supported, color: Colors.grey),
-					)
-					: Image.asset(
-						path,
-						width: 50,
-						height: 50,
-						fit: BoxFit.cover,
-						errorBuilder: (context, error, stack) => const Icon(Icons.image_not_supported, color: Colors.grey),
-					);
-			return ClipRRect(
-				borderRadius: BorderRadius.circular(6),
-				child: Container(color: Colors.grey[300], child: image),
-			);
-		}
+class _FavoritesScreenState extends State<FavoritesScreen> {
+  List<Recipe> _favoriteRecipes = [];
+  bool _isLoading = true;
 
-		return Scaffold(
-			appBar: AppBar(title: const Text("Favoritos")),
-			body: favoritos.isEmpty
-					? const Center(child: Text("Nenhuma receita favorita ainda"))
-					: ListView.builder(
-						itemCount: favoritos.length,
-						itemBuilder: (context, index) {
-							final receita = favoritos[index];
-							return Card(
-								child: ListTile(
-									leading: buildThumb(receita['imagem'] as String),
-									title: Text(receita['titulo'] as String),
-									subtitle: Text(receita['descricao'] as String),
-									onTap: () => Navigator.pushNamed(
-										context,
-										'/detail',
-										arguments: receita,
-									),
-								),
-							);
-						},
-					),
-			bottomNavigationBar: BottomNavigationBar(
-				items: const [
-					BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-					BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favoritos"),
-				],
-				currentIndex: 1,
-				onTap: (index) {
-					if (index == 0) Navigator.pop(context);
-				},
-			),
-		);
-	}
+  @override
+  void initState() {
+    super.initState();
+    _loadFavorites();
+  }
+
+  Future<void> _loadFavorites() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final ids = await LocalStorageService.loadFavorites();
+    List<Recipe> loaded = [];
+    for (final id in ids) {
+      final recipe = await RecipeService.getRecipeById(id);
+      if (recipe != null) loaded.add(recipe);
+    }
+    setState(() {
+      _favoriteRecipes = loaded;
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _removeFromFavorites(Recipe recipe) async {
+    await LocalStorageService.removeFromFavorites(recipe.id);
+    setState(() {
+      _favoriteRecipes.removeWhere((r) => r.id == recipe.id);
+    });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Receita removida dos favoritos'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Favoritos'),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _favoriteRecipes.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.favorite_border,
+                        size: 64,
+                        color: Colors.grey.shade400,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Nenhuma receita favoritada',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Adicione receitas aos favoritos para vê-las aqui',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                )
+              : AnimationLimiter(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    itemCount: _favoriteRecipes.length,
+                    itemBuilder: (context, index) {
+                      final recipe = _favoriteRecipes[index];
+                      return AnimationConfiguration.staggeredList(
+                        position: index,
+                        duration: const Duration(milliseconds: 600),
+                        child: SlideAnimation(
+                          verticalOffset: 50.0,
+                          child: FadeInAnimation(
+                            child: RecipeCard(
+                              title: recipe.title,
+                              description: recipe.description,
+                              imageUrl: recipe.imageUrl,
+                              category: recipe.category,
+                              isFavorite: true,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        RecipeDetailScreen(recipe: recipe),
+                                  ),
+                                );
+                              },
+                              onFavoriteToggle: () => _removeFromFavorites(recipe),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+    );
+  }
 }

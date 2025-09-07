@@ -1,15 +1,39 @@
-# lista_receitas
- 
- Lista de Receitas a melhor solução contra o desperdício (Baseado no nosso projeto do semestre passado a Ecolist)
+ Lista de Receitas
 
- Ele se trata de um aplicativo simples de receitas, desenvolvido com dart e é claro o framework flutter. O objetivo é permitir que o usuário visualize uma lista de receitas prontas, navegue entre as telas e consulte detalhes de cada receita.
+Um aplicativo de receitas moderno e acessível desenvolvido em Flutter, integrando com a API TheMealDB e implementando princípios de UI/UX avançados. O app é a melhoria do nosso projeto no semestre passado o Ecolist. Ainda temos alguns pequenos ajustes finais antes da apresentação do dia 13.
 
- Ainda serão implementadas diversas funcionalidades nas futuras entregas, como o consumo de uma api para a busca de receitas com ingredientes específicos. Assim como o crud para o cadastramento de novas receitas e a melhoria da interface em geral.
+Funcionalidades Implementadas
 
-Grupo:
-João Pedro Ortolan Pereira 
-João Vitor Grando 
-Rafael Angelo Silva 
+ Atomic Design
+- Átomos: Widgets reutilizáveis (CustomButton, CustomTextField)
+- Moléculas: Componentes compostos (RecipeCard)
+- Organismos: Telas completas usando os componentes atômicos
 
-Pedimos desculpas pela ausência da definição dos integrantes e do tema do dia 08/08 :)
+ Microinterações
+- Animações suaves de entrada e saída
+- Feedback visual em botões e cards
+- Transições fluidas entre telas
+- Animações escalonadas em listas
 
+Acessibilidade
+- Uso de Semantics para leitores de tela
+- Contraste adequado de cores
+- Labels descritivos para elementos interativos
+- Navegação por teclado suportada
+
+ Consumo de API
+- Integração completa com **TheMealDB** (Escolhida por meio de uma breve pesquisa que apontou que a API era ideal para projetos )
+- Busca de receitas por categoria
+- Receitas aleatórias
+- Busca por nome
+- Tratamento de erros e loading states
+
+ Formulários e Validação
+- Formulário completo para adicionar receitas
+- Validação em tempo real
+- Múltiplos campos de entrada
+- Feedback visual de erros
+- Validação de URL de imagem
+
+
+Alunos: João Pedro Ortolan, João Vitor Grando, Rafael Angelo Silva. 

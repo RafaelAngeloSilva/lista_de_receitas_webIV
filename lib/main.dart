@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
-import 'screens/recipe_detail_screen.dart';
-import 'screens/favorites_screen.dart';
+import 'screens/dashboard_screen.dart';
+import 'screens/add_recipe_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,12 +22,22 @@ class MyApp extends StatelessWidget {
           elevation: 2,
         ),
         useMaterial3: true,
+        // Melhorando acessibilidade com contraste adequado
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(color: Color(0xFF1A1A1A)),
+          bodyMedium: TextStyle(color: Color(0xFF1A1A1A)),
+        ),
+        cardTheme: const CardThemeData(
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+          ),
+        ),
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => const HomeScreen(),
-        '/detail': (context) => const RecipeDetailScreen(),
-        '/favorites': (context) => FavoritesScreen(favoritos: []),
+        '/': (context) => const DashboardScreen(),
+        '/add': (context) => const AddRecipeScreen(),
       },
     );
   }
